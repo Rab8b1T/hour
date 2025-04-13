@@ -3,7 +3,11 @@ const path = require('path');
 const cors = require('cors');
 const connectDB = require('./config/db');
 require('dotenv').config();
-
+// Add near the top of server.js after imports
+console.log('Starting server with environment:');
+console.log(`- NODE_ENV: ${process.env.NODE_ENV || 'not set'}`);
+console.log(`- PORT: ${process.env.PORT || '5000 (default)'}`);
+console.log(`- MongoDB URI set: ${process.env.MONGODB_URI ? 'Yes' : 'No'}`);
 // Connect to MongoDB
 connectDB();
 

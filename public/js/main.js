@@ -104,13 +104,23 @@ function updateDateDisplay() {
 }
 
 // Make API call with error handling
+// Make API call with error handling
 async function fetchAPI(endpoint, options = {}) {
+  const fullUrl = `${API_BASE_URL}${endpoint}`;
+  console.log(`API request to: ${fullUrl}`);
+  
   try {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
+    const response = await fetch(fullUrl, options);
     
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.msg || `API request failed with status ${response.status}`);
+      let errorMsg;
+      try {
+        const errorData = await response.json();
+        errorMsg = errorData.msg || `API request failed with status ${response.status}`;
+      } catch (e) {
+        errorMsg = `API request failed with status ${response.status}`;
+      }
+      throw new Error(errorMsg);
     }
     
     return await response.json();

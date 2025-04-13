@@ -18,14 +18,22 @@ router.get('/', async (req, res) => {
 // @route   GET /api/hours/:date
 // @desc    Get hour record for specific date (YYYY-MM-DD)
 // @access  Public
+// @route   GET /api/hours/:date
+// @desc    Get hour record for specific date (YYYY-MM-DD)
+// @access  Public
 router.get('/:date', async (req, res) => {
   try {
     const dateStr = req.params.date;
+    console.log(`Looking for records on date: ${dateStr}`);
+    
+    // Create a date range that spans the entire day regardless of timezone
     const startDate = new Date(dateStr);
-    startDate.setHours(0, 0, 0, 0);
+    startDate.setUTCHours(0, 0, 0, 0);
     
     const endDate = new Date(dateStr);
-    endDate.setHours(23, 59, 59, 999);
+    endDate.setUTCHours(23, 59, 59, 999);
+    
+    console.log(`Date range: ${startDate.toISOString()} to ${endDate.toISOString()}`);
     
     const hourRecord = await Hour.findOne({
       date: {
@@ -35,12 +43,14 @@ router.get('/:date', async (req, res) => {
     });
     
     if (!hourRecord) {
+      console.log(`No records found for date: ${dateStr}`);
       return res.status(404).json({ msg: 'No records found for this date' });
     }
     
+    console.log(`Found record with ${hourRecord.records.length} entries`);
     res.json(hourRecord);
   } catch (err) {
-    console.error(err.message);
+    console.error(`Error for date ${req.params.date}:`, err.message);
     res.status(500).send('Server Error');
   }
 });

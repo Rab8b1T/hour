@@ -27,29 +27,37 @@ document.addEventListener('DOMContentLoaded', function() {
   }
   
   // Load records for a specific date
-  async function loadRecordsForDate(date) {
-    try {
-      const response = await fetchAPI(`/hours/${date}`);
-      
-      // Show the data container and hide the no-data message
-      document.getElementById('data-container').style.display = 'block';
-      document.getElementById('no-data-message').classList.add('hidden');
-      
-      // Update the table with the records
-      updateRecordsTable(response.records);
-      
-      // Update the category list
-      updateCategoryList(response.records);
-    } catch (error) {
-      if (error.message.includes('404')) {
-        // No records for this date
-        document.getElementById('data-container').style.display = 'none';
-        document.getElementById('no-data-message').classList.remove('hidden');
-      } else {
-        showError('Failed to load records: ' + error.message);
-      }
+  // Load records for a specific date
+async function loadRecordsForDate(date) {
+  try {
+    console.log(`Loading records for date: ${date}`);
+    const response = await fetchAPI(`/hours/${date}`);
+    
+    // Show the data container and hide the no-data message
+    document.getElementById('data-container').style.display = 'block';
+    document.getElementById('no-data-message').classList.add('hidden');
+    
+    // Update the table with the records
+    updateRecordsTable(response.records);
+    
+    // Update the category list
+    updateCategoryList(response.records);
+  } catch (error) {
+    console.log(`Error loading data for ${date}:`, error.message);
+    
+    // More robust error detection
+    if (error.message.includes('404') || 
+        error.message.includes('No records') || 
+        error.message.includes('not found')) {
+      console.log('No data available, showing message');
+      // No records for this date
+      document.getElementById('data-container').style.display = 'none';
+      document.getElementById('no-data-message').classList.remove('hidden');
+    } else {
+      showError('Failed to load records: ' + error.message);
     }
   }
+}
   
   // Update the records table
   function updateRecordsTable(records) {
