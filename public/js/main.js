@@ -1,7 +1,7 @@
 // Common functionality shared across all pages
 
 // API base URL - update this based on your deployment
-const API_BASE_URL = 'http://localhost:5000/api';
+const API_BASE_URL = '/api';
 
 // List of all available sections
 const ALL_SECTIONS = [
