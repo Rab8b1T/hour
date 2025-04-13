@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hour Management - View Hours</title>
+  <link rel="stylesheet" href="../css/main.css">
+  <link rel="stylesheet" href="../css/view.css">
+</head>
+<body>
+  <header>
+    <div class="container">
+      <a href="index.html" class="back-link">← Home</a>
+      <h1>View Hour Record for <span id="selected-date">Date</span></h1>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="date-selector">
+      <label for="date-input">Select Date:</label>
+      <input type="date" id="date-input">
+    </div>
+
+    <div class="view-container">
+      <div id="no-data-message" class="hidden">
+        <p>No data available for the selected date.</p>
+      </div>
+
+      <div id="data-container">
+        <table id="view-table">
+          <thead>
+            <tr>
+              <th>Section</th>
+              <th>Hours Spent</th>
+            </tr>
+          </thead>
+          <tbody id="view-table-body">
+            <!-- Table rows will be added dynamically -->
+          </tbody>
+        </table>
+
+        <div class="section-wise-view">
+          <h3>Section-Wise View</h3>
+          <ul id="category-list">
+            <!-- Categories will be added dynamically -->
+          </ul>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="../js/main.js"></script>
+  <script src="../js/view.js"></script>
+</body>
+</html>

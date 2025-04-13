@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hour Management - Analytics</title>
+  <link rel="stylesheet" href="../css/main.css">
+  <link rel="stylesheet" href="../css/analytics.css">
+</head>
+<body>
+  <header>
+    <div class="container">
+      <a href="index.html" class="back-link">← Home</a>
+      <h1>View Analytics</h1>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Tab Navigation -->
+    <div class="analytics-tabs">
+      <button class="tab-btn active" data-tab="day">Day View</button>
+      <button class="tab-btn" data-tab="week">Week View</button>
+    </div>
+
+    <!-- Day View Tab Content -->
+    <div id="day-tab" class="tab-content active">
+      <div class="date-selector">
+        <label for="day-date-input">Select Date:</label>
+        <input type="date" id="day-date-input">
+      </div>
+
+      <div class="analytics-container" id="day-analytics-container">
+        <div id="day-no-data-message" class="hidden">
+          <p>No data available for the selected date.</p>
+        </div>
+
+        <div id="day-data-container">
+          <table id="day-analytics-table">
+            <thead>
+              <tr>
+                <th>Section</th>
+                <th>Hours Spent</th>
+              </tr>
+            </thead>
+            <tbody id="day-analytics-table-body">
+              <!-- Table rows will be added dynamically -->
+            </tbody>
+          </table>
+
+          <div class="section-wise-view">
+            <h3>Section-Wise View</h3>
+            <ul id="day-category-list">
+              <!-- Categories will be added dynamically -->
+            </ul>
+          </div>
+        </div>
+
+        <div id="day-charts-container" class="charts-container">
+          <div class="chart-wrapper">
+            <h3>Distribution by Category</h3>
+            <canvas id="day-category-chart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Week View Tab Content -->
+    <div id="week-tab" class="tab-content">
+      <div class="week-selector">
+        <div class="date-range-selector">
+          <div class="date-input-group">
+            <label for="week-start-input">Start Date:</label>
+            <input type="date" id="week-start-input">
+          </div>
+          <div class="date-input-group">
+            <label for="week-end-input">End Date:</label>
+            <input type="date" id="week-end-input" disabled>
+          </div>
+        </div>
+        <div class="date-range-display">
+          <span id="week-range"></span>
+        </div>
+      </div>
+
+      <div class="analytics-container" id="week-analytics-container">
+        <div id="week-no-data-message" class="hidden">
+          <p>No data available for the selected week.</p>
+        </div>
+
+        <div id="week-summary" class="week-summary hidden">
+          <!-- Week summary content will be added dynamically -->
+        </div>
+
+        <div id="week-data-container">
+          <table id="week-analytics-table">
+            <thead>
+              <tr>
+                <th>Section</th>
+                <th>Hours Spent</th>
+                <th>Daily Average</th>
+                <th>Percentage</th>
+              </tr>
+            </thead>
+            <tbody id="week-analytics-table-body">
+              <!-- Table rows will be added dynamically -->
+            </tbody>
+          </table>
+
+          <div class="section-wise-view">
+            <h3>Section-Wise View</h3>
+            <ul id="week-category-list">
+              <!-- Categories will be added dynamically -->
+            </ul>
+          </div>
+        </div>
+
+        <div id="week-charts-container" class="charts-container">
+          <div class="chart-wrapper">
+            <h3>Distribution by Category</h3>
+            <canvas id="week-category-chart"></canvas>
+          </div>
+          <div class="chart-wrapper">
+            <h3>Daily Activity</h3>
+            <canvas id="daily-chart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="../js/main.js"></script>
+  <script src="../js/analytics.js"></script>
+</body>
+</html>

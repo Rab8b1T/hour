@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hour Management</title>
+  <!-- Add Material Icons font -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <!-- Add Inter font -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Update CSS paths to be absolute -->
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/home.css">
+</head>
+<body>
+  <div class="container">
+    <div class="home-page">
+      <div class="home-header">
+        <h1>Hour Management</h1>
+        <div class="date-display">
+          <span id="today-date">April 13, 2025</span>
+        </div>
+      </div>
+
+      <div class="menu-grid">
+        <!-- Update all links to use absolute paths -->
+        <a href="/pages/record.html" class="menu-item">
+          <div class="menu-card record-card">
+            <span class="material-icons card-icon">edit</span>
+            <h3>Record Hour</h3>
+          </div>
+        </a>
+        <a href="/pages/view.html" class="menu-item">
+          <div class="menu-card view-card">
+            <span class="material-icons card-icon">visibility</span>
+            <h3>View any date Hour</h3>
+          </div>
+        </a>
+        <a href="/pages/analytics.html" class="menu-item">
+          <div class="menu-card analytics-card">
+            <span class="material-icons card-icon">analytics</span>
+            <h3>View Analytics</h3>
+          </div>
+        </a>
+        <a href="/pages/goals.html" class="menu-item">
+          <div class="menu-card goals-card">
+            <span class="material-icons card-icon">flag</span>
+            <h3>Goals View</h3>
+          </div>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Update JS paths to be absolute -->
+  <script src="/js/main.js"></script>
+  <script>
+    // Initialize the application
+    document.addEventListener('DOMContentLoaded', function() {
+      // Update the today's date display
+      const todayDateEl = document.getElementById('today-date');
+      if (todayDateEl) {
+        const options = { year: 'numeric', month: 'long', day: 'numeric' };
+        todayDateEl.textContent = new Date().toLocaleDateString(undefined, options);
+      }
+    });
+  </script>
+</body>
+</html>

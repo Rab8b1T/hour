@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hour Management - Goals</title>
+  <link rel="stylesheet" href="../css/main.css">
+  <link rel="stylesheet" href="../css/goals.css">
+</head>
+<body>
+  <header>
+    <div class="container">
+      <a href="index.html" class="back-link">← Home</a>
+      <h1>Goals View</h1>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="goals-tabs">
+      <button class="tab-btn active" data-tab="day">For Date</button>
+      <button class="tab-btn" data-tab="week">For Week</button>
+    </div>
+
+    <div class="goals-container">
+      <!-- Day Goals Tab -->
+      <div id="day-tab" class="tab-content active">
+        <div class="date-selector">
+          <label for="day-date-input">Select Date:</label>
+          <input type="date" id="day-date-input">
+        </div>
+
+        <div class="goals-section">
+          <div id="day-goals-table-container">
+            <table id="day-goals-table">
+              <thead>
+                <tr>
+                  <th>Section</th>
+                  <th>Target Hours</th>
+                  <th>Actual Hours</th>
+                  <th>Left</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="day-goals-table-body">
+                <!-- Table rows will be added dynamically -->
+              </tbody>
+              <tfoot>
+                <tr id="day-overall-status-row">
+                  <td colspan="3" class="overall-label">Overall Status:</td>
+                  <td colspan="2" class="overall-status">Not Set</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+
+          <div class="target-hours-form">
+            <h3>Update Target Hours</h3>
+            <div class="form-grid">
+              <!-- Form fields will be generated dynamically -->
+            </div>
+            <button id="save-day-goals-btn" class="btn submit-btn">Save Goals</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Week Goals Tab -->
+      <div id="week-tab" class="tab-content">
+        <div class="week-selector">
+          <div class="date-range-selector">
+            <div class="date-input-group">
+              <label for="week-start-input">Start Date:</label>
+              <input type="date" id="week-start-input">
+            </div>
+            <div class="date-input-group">
+              <label for="week-end-input">End Date:</label>
+              <input type="date" id="week-end-input" disabled>
+            </div>
+          </div>
+          <div class="date-range-display">
+            <span id="week-range"></span>
+          </div>
+        </div>
+
+        <div class="goals-section">
+          <div id="week-goals-table-container">
+            <table id="week-goals-table">
+              <thead>
+                <tr>
+                  <th>Section</th>
+                  <th>Target Hours</th>
+                  <th>Actual Hours</th>
+                  <th>Left</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="week-goals-table-body">
+                <!-- Table rows will be added dynamically -->
+              </tbody>
+              <tfoot>
+                <tr id="week-overall-status-row">
+                  <td colspan="3" class="overall-label">Overall Status:</td>
+                  <td colspan="2" class="overall-status">Not Set</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+
+          <div class="target-hours-form">
+            <h3>Update Target Hours</h3>
+            <div class="form-grid">
+              <!-- Form fields will be generated dynamically -->
+            </div>
+            <button id="save-week-goals-btn" class="btn submit-btn">Save Goals</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="../js/main.js"></script>
+  <script src="../js/goals.js"></script>
+</body>
+</html>

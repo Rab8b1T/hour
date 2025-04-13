@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hour Management - Record Hours</title>
+  <link rel="stylesheet" href="../css/main.css">
+  <link rel="stylesheet" href="../css/record.css">
+</head>
+<body>
+  <header>
+    <div class="container">
+      <a href="index.html" class="back-link">← Home</a>
+      <h1>Record Hour For <span id="record-date">Today's Date</span></h1>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="record-container">
+      <!-- Add date selector -->
+      <div class="date-selector">
+        <label for="date-input">Select Date:</label>
+        <input type="date" id="date-input">
+      </div>
+
+      <table id="record-table">
+        <thead>
+          <tr>
+            <th>Section</th>
+            <th>Hours</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="record-table-body">
+          <!-- Table rows will be added dynamically -->
+        </tbody>
+      </table>
+
+      <!-- Hidden add form - we'll keep this for editing -->
+      <div id="add-record-form" class="hidden">
+        <div class="form-group">
+          <label for="section-select">Select Section:</label>
+          <select id="section-select">
+            <option value="">--Select a section--</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="hours-input">Hours:</label>
+          <input type="number" id="hours-input" min="0" max="24" step="0.5">
+        </div>
+        <button id="add-hours-btn" class="btn">Add Hours</button>
+      </div>
+
+      <button id="submit-btn" class="btn submit-btn">Submit</button>
+
+      <div class="progress-section">
+        <div class="progress-container">
+          <p>Day Progress:</p>
+          <div class="progress-bar">
+            <div id="day-progress" class="progress-bar-fill"></div>
+          </div>
+        </div>
+        
+        <div class="progress-container">
+          <p>24 Hour Progress:</p>
+          <div class="progress-bar">
+            <div id="hour-progress" class="progress-bar-fill"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="../js/main.js"></script>
+  <script src="../js/record.js"></script>
+</body>
+</html>
