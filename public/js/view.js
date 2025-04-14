@@ -28,6 +28,9 @@ function updateSelectedDateDisplay() {
 
 // Load records for a specific date with improved error handling
 async function loadRecordsForDate(date) {
+  // Show loading state
+  showLoadingState();
+  
   try {
     console.log(`Loading records for date: ${date}`);
     
@@ -43,21 +46,91 @@ async function loadRecordsForDate(date) {
     
     // Update the category list
     updateCategoryList(response.records);
+    
+    // Hide loading state
+    hideLoadingState();
   } catch (error) {
     console.log(`Error loading data for ${date}:`, error.message);
+    hideLoadingState();
     
     // More robust error detection
     if (error.message.includes('404') || 
         error.message.includes('No records') || 
         error.message.includes('not found')) {
       console.log('No data available, showing message');
-      // No records for this date - show the no-data message without an alert
+      // No records for this date - show the no-data message
       document.getElementById('data-container').style.display = 'none';
       document.getElementById('no-data-message').classList.remove('hidden');
     } else {
-      // Only show error alert for unexpected errors, not for "no data" errors
-      showError('Failed to load records: ' + error.message);
+      // Show connection error
+      document.getElementById('data-container').style.display = 'none';
+      document.getElementById('no-data-message').innerHTML = `
+        <p>Error connecting to the server. This could be due to:</p>
+        <ul style="text-align: left; margin: 10px auto; max-width: 400px;">
+          <li>Server is starting up (wait a few seconds and try again)</li>
+          <li>Database connection issues</li>
+          <li>Network connectivity problems</li>
+        </ul>
+        <p><button onclick="window.location.reload()" class="btn">Refresh Page</button></p>
+      `;
+      document.getElementById('no-data-message').classList.remove('hidden');
     }
+  }
+}
+
+// Show loading state
+function showLoadingState() {
+  const loadingEl = document.createElement('div');
+  loadingEl.id = 'loading-indicator';
+  loadingEl.innerHTML = `
+    <div class="loading-spinner"></div>
+    <p>Loading data...</p>
+  `;
+  loadingEl.style.textAlign = 'center';
+  loadingEl.style.padding = '20px';
+  
+  // Create and add CSS for spinner if it doesn't exist
+  if (!document.getElementById('spinner-style')) {
+    const style = document.createElement('style');
+    style.id = 'spinner-style';
+    style.textContent = `
+      .loading-spinner {
+        border: 4px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        border-top: 4px solid var(--accent-primary);
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 15px auto;
+      }
+      
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+  
+  // Remove any existing loading indicator
+  const existingLoading = document.getElementById('loading-indicator');
+  if (existingLoading) {
+    existingLoading.remove();
+  }
+  
+  // Hide the data container and no-data message while loading
+  document.getElementById('data-container').style.display = 'none';
+  document.getElementById('no-data-message').classList.add('hidden');
+  
+  // Add loading indicator
+  document.querySelector('.view-container').prepend(loadingEl);
+}
+
+// Hide loading state
+function hideLoadingState() {
+  const loadingEl = document.getElementById('loading-indicator');
+  if (loadingEl) {
+    loadingEl.remove();
   }
 }
 

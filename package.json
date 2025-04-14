@@ -7,6 +7,7 @@
     "start": "node server/server.js",
     "dev": "nodemon server/server.js",
     "build": "echo 'Build step completed'",
+    "check-env": "node -e \"console.log('Environment check:'); console.log('MONGODB_URI set:', !!process.env.MONGODB_URI); console.log('NODE_ENV:', process.env.NODE_ENV || 'not set'); console.log('Current directory:', process.cwd());\"",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
@@ -24,5 +25,8 @@
   },
   "devDependencies": {
     "nodemon": "^3.0.1"
+  },
+  "engines": {
+    "node": ">=14.0.0"
   }
 }

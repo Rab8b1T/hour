@@ -14,28 +14,17 @@ console.log(`- Server Timezone: ${Intl.DateTimeFormat().resolvedOptions().timeZo
 console.log(`- Current server time: ${new Date().toISOString()}`);
 console.log(`- Current local time: ${new Date().toString()}`);
 
-// Connect to MongoDB
-try {
-  connectDB();
-} catch (error) {
-  console.error('Failed to connect to MongoDB:', error);
-  // Don't exit the process on Vercel as it will just restart
-  if (process.env.NODE_ENV !== 'production') {
-    process.exit(1);
-  }
-}
-
-// Add MongoDB connection monitoring
-mongoose.connection.on('error', err => {
-  console.error('MongoDB connection error:', err);
-});
-
-mongoose.connection.on('disconnected', () => {
-  console.error('MongoDB disconnected, attempting to reconnect...');
-  connectDB();
-});
-
 const app = express();
+
+// Setup middleware first
+app.use(cors());
+app.use(express.json());
+
+// Add request logging middleware for all routes
+app.use((req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl}`);
+  next();
+});
 
 // Enhanced error handling middleware
 app.use((err, req, res, next) => {
@@ -46,19 +35,52 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Middleware
-app.use(cors());
-app.use(express.json());
+// Connect to MongoDB - in serverless environment, connect for each request
+let isConnected = false;
+const dbConnect = async () => {
+  if (isConnected) {
+    console.log('Using existing database connection');
+    return;
+  }
 
-// Add request logging middleware for API routes
-app.use('/api', (req, res, next) => {
-  console.log(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl}`);
-  next();
+  try {
+    await connectDB();
+    isConnected = true;
+    console.log('Database connection established');
+  } catch (error) {
+    console.error('Database connection error:', error);
+    throw error;
+  }
+};
+
+// Middleware to ensure DB connection before processing API requests
+app.use('/api', async (req, res, next) => {
+  try {
+    await dbConnect();
+    next();
+  } catch (error) {
+    console.error('Failed to connect to database:', error);
+    return res.status(500).json({
+      error: 'Database connection failed',
+      message: 'Could not connect to the database. Please try again later.'
+    });
+  }
 });
 
 // API Routes
 app.use('/api/hours', require('./routes/hourRoutes'));
 app.use('/api/goals', require('./routes/goalRoutes'));
+
+// Add a test endpoint to verify API is working
+app.get('/api/test', (req, res) => {
+  res.json({ 
+    status: 'ok', 
+    message: 'API is working', 
+    serverTime: new Date().toISOString(),
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    dbConnected: isConnected
+  });
+});
 
 // Serve static files (CSS, JS, images)
 app.use(express.static(path.join(__dirname, '../public')));
@@ -75,27 +97,23 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '../public/pages/index.html'));
 });
 
-// Add a test endpoint to verify API is working
-app.get('/api/test', (req, res) => {
-  res.json({ 
-    status: 'ok', 
-    message: 'API is working', 
-    serverTime: new Date().toISOString(),
-    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
-  });
-});
-
 // Handle 404 errors for any other routes
 app.use((req, res) => {
-  if (!req.path.startsWith('/api/')) {
-    res.status(404).sendFile(path.join(__dirname, '../public/pages/index.html'));
+  if (req.path.startsWith('/api/')) {
+    res.status(404).json({ error: 'API endpoint not found', path: req.path });
   } else {
-    res.status(404).json({ error: 'API endpoint not found' });
+    res.status(404).sendFile(path.join(__dirname, '../public/pages/index.html'));
   }
 });
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+// Only listen on port if not in Vercel environment
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}
+
+// Export the app for serverless environments
+module.exports = app;

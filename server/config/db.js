@@ -1,7 +1,16 @@
 const mongoose = require('mongoose');
 require('dotenv').config();
 
+// Track connection status
+let isConnected = false;
+
 const connectDB = async () => {
+  // If already connected, return the existing connection
+  if (isConnected) {
+    console.log('=> Using existing database connection');
+    return mongoose.connection;
+  }
+
   try {
     // Validate MongoDB URI
     if (!process.env.MONGODB_URI) {
@@ -11,23 +20,33 @@ const connectDB = async () => {
     // Added validation and debugging info
     console.log('Connecting to MongoDB...');
     console.log(`MongoDB URI length: ${process.env.MONGODB_URI.length} characters`);
-    console.log(`MongoDB URI starts with: ${process.env.MONGODB_URI.substring(0, 10)}...`);
+    console.log(`MongoDB URI prefix: ${process.env.MONGODB_URI.substring(0, 10)}...`);
     
-    // Add more robust connection options
+    // Add more robust connection options for serverless environment
     const conn = await mongoose.connect(process.env.MONGODB_URI, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
       serverSelectionTimeoutMS: 10000, // Timeout after 10 seconds
       socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
-      family: 4 // Use IPv4, skip trying IPv6
+      family: 4, // Use IPv4, skip trying IPv6
+      bufferCommands: false, // Disable command buffering
+      connectTimeoutMS: 10000 // Connection timeout
     });
     
+    isConnected = true;
     console.log(`MongoDB Connected: ${conn.connection.host}`);
     console.log(`MongoDB Database Name: ${conn.connection.name}`);
     
-    // Test the connection with a simple query
-    const collections = await mongoose.connection.db.listCollections().toArray();
-    console.log(`Available collections: ${collections.map(c => c.name).join(', ') || 'None'}`);
+    // Setup connection error handling for better detection of issues
+    mongoose.connection.on('error', err => {
+      console.error('MongoDB connection error:', err);
+      isConnected = false;
+    });
+    
+    mongoose.connection.on('disconnected', () => {
+      console.log('MongoDB disconnected');
+      isConnected = false;
+    });
     
     return conn;
   } catch (error) {
@@ -39,10 +58,7 @@ const connectDB = async () => {
       console.error('Could not connect to any MongoDB servers. Please check your network or MongoDB Atlas status.');
     }
     
-    // Don't exit process in production (like Vercel) as it will just restart
-    if (process.env.NODE_ENV !== 'production') {
-      process.exit(1);
-    }
+    isConnected = false;
     throw error;
   }
 };

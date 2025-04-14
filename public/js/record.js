@@ -33,6 +33,46 @@ document.addEventListener('DOMContentLoaded', function() {
   // Pre-populate all sections and load today's records
   prepopulateAllSections();
   loadRecordsForDate(selectedDate);
+  
+  // Create and add CSS for spinner if it doesn't exist
+  if (!document.getElementById('spinner-style')) {
+    const style = document.createElement('style');
+    style.id = 'spinner-style';
+    style.textContent = `
+      .loading-spinner {
+        border: 4px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        border-top: 4px solid var(--accent-primary);
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 15px auto;
+      }
+      
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+      
+      .success-message, .error-message {
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        text-align: center;
+        color: white;
+        font-weight: 500;
+      }
+      
+      .success-message {
+        background-color: var(--accent-success);
+      }
+      
+      .error-message {
+        background-color: var(--accent-error);
+      }
+    `;
+    document.head.appendChild(style);
+  }
 });
 
 // Initialize the section select dropdown
@@ -73,12 +113,19 @@ function prepopulateAllSections() {
   
   // Update the UI
   updateTableUI();
+  updateProgressBars();
 }
 
 // Load records for a specific date
 async function loadRecordsForDate(date) {
+  // Show loading state
+  showLoadingState();
+  
   try {
     const response = await fetchAPI(`/hours/${date}`);
+    
+    // Hide loading state
+    hideLoadingState();
     
     // Clear current records
     currentRecords = [];
@@ -98,13 +145,78 @@ async function loadRecordsForDate(date) {
     updateTableUI();
     updateProgressBars();
   } catch (error) {
-    if (error.message.includes('404')) {
+    // Hide loading state
+    hideLoadingState();
+    
+    if (error.message.includes('404') || error.message.includes('No records')) {
+      console.log(`No records for date ${date}, using pre-populated sections`);
       // No records for this date, use the pre-populated sections
       prepopulateAllSections();
     } else {
-      showError('Failed to load records: ' + error.message);
+      // Show connectivity error without preventing work
+      showConnectivityError();
     }
   }
+}
+
+// Show loading state
+function showLoadingState() {
+  const loadingEl = document.createElement('div');
+  loadingEl.id = 'loading-indicator';
+  loadingEl.innerHTML = `
+    <div class="loading-spinner"></div>
+    <p>Loading data...</p>
+  `;
+  loadingEl.style.textAlign = 'center';
+  loadingEl.style.padding = '20px';
+  
+  // Remove any existing loading indicator
+  const existingLoading = document.getElementById('loading-indicator');
+  if (existingLoading) {
+    existingLoading.remove();
+  }
+  
+  // Add loading indicator
+  document.querySelector('.record-container').prepend(loadingEl);
+}
+
+// Hide loading state
+function hideLoadingState() {
+  const loadingEl = document.getElementById('loading-indicator');
+  if (loadingEl) {
+    loadingEl.remove();
+  }
+}
+
+// Show connectivity error
+function showConnectivityError() {
+  if (document.getElementById('connection-error')) return;
+  
+  const errorDiv = document.createElement('div');
+  errorDiv.id = 'connection-error';
+  errorDiv.style.backgroundColor = '#ff4d4d';
+  errorDiv.style.color = 'white';
+  errorDiv.style.padding = '15px';
+  errorDiv.style.borderRadius = '8px';
+  errorDiv.style.marginBottom = '20px';
+  errorDiv.style.textAlign = 'center';
+  
+  errorDiv.innerHTML = `
+    <h3>Connection Error</h3>
+    <p>Unable to connect to the server. This could be due to:</p>
+    <ul style="text-align: left; margin: 10px auto; max-width: 400px;">
+      <li>Server is starting up (wait a few seconds and try again)</li>
+      <li>Database connection issues</li>
+      <li>Network connectivity problems</li>
+    </ul>
+    <p>You can continue working with pre-populated sections, but your changes might not be saved.</p>
+    <button onclick="window.location.reload()" class="btn">Refresh Page</button>
+  `;
+  
+  document.querySelector('.record-container').prepend(errorDiv);
+  
+  // Also pre-populate sections so the user can continue working
+  prepopulateAllSections();
 }
 
 // Edit a section
@@ -293,6 +405,12 @@ function updateProgressBars() {
 
 // Submit the hour record to the API
 async function submitHourRecord() {
+  // Show loading state
+  const submitBtn = document.getElementById('submit-btn');
+  const originalText = submitBtn.textContent;
+  submitBtn.textContent = 'Submitting...';
+  submitBtn.disabled = true;
+  
   try {
     // Filter out the "Nothing" section as it will be calculated on the server
     const recordsToSubmit = currentRecords.filter(record => record.section !== 'Nothing');
@@ -311,11 +429,58 @@ async function submitHourRecord() {
       })
     });
     
-    alert('Record submitted successfully!');
+    // Reset button
+    submitBtn.textContent = originalText;
+    submitBtn.disabled = false;
+    
+    // Show success message
+    showSuccessMessage('Record submitted successfully!');
     
     // Reload the records to get the server-calculated "Nothing" hours
     loadRecordsForDate(selectedDate);
   } catch (error) {
-    showError('Failed to submit record: ' + error.message);
+    // Reset button
+    submitBtn.textContent = originalText;
+    submitBtn.disabled = false;
+    
+    // Show error
+    console.error('Error submitting record:', error);
+    showErrorMessage('Failed to submit record. ' + (error.message || 'Please try again.'));
   }
+}
+
+// Show success message
+function showSuccessMessage(message) {
+  const msgDiv = document.createElement('div');
+  msgDiv.className = 'success-message';
+  
+  msgDiv.textContent = message;
+  
+  // Remove any existing messages
+  document.querySelectorAll('.success-message, .error-message').forEach(el => el.remove());
+  
+  document.querySelector('.record-container').prepend(msgDiv);
+  
+  // Remove after 5 seconds
+  setTimeout(() => {
+    msgDiv.remove();
+  }, 5000);
+}
+
+// Show error message
+function showErrorMessage(message) {
+  const msgDiv = document.createElement('div');
+  msgDiv.className = 'error-message';
+  
+  msgDiv.textContent = message;
+  
+  // Remove any existing messages
+  document.querySelectorAll('.success-message, .error-message').forEach(el => el.remove());
+  
+  document.querySelector('.record-container').prepend(msgDiv);
+  
+  // Remove after 8 seconds
+  setTimeout(() => {
+    msgDiv.remove();
+  }, 8000);
 }
