@@ -26,39 +26,39 @@ function updateSelectedDateDisplay() {
   selectedDate.textContent = formatReadableDate(dateInput.value);
 }
 
-// Load records for a specific date
+// Load records for a specific date with improved error handling
 async function loadRecordsForDate(date) {
-try {
-  console.log(`Loading records for date: ${date}`);
-  
-  // Add timestamp to avoid caching issues
-  const timestamp = new Date().getTime();
-  const response = await fetchAPI(`/hours/${date}?_t=${timestamp}`);
-  
-  // Show the data container and hide the no-data message
-  document.getElementById('data-container').style.display = 'block';
-  document.getElementById('no-data-message').classList.add('hidden');
-  
-  // Update the table with the records
-  updateRecordsTable(response.records);
-  
-  // Update the category list
-  updateCategoryList(response.records);
-} catch (error) {
-  console.log(`Error loading data for ${date}:`, error.message);
-  
-  // More robust error detection
-  if (error.message.includes('404') || 
-      error.message.includes('No records') || 
-      error.message.includes('not found')) {
-    console.log('No data available, showing message');
-    // No records for this date
-    document.getElementById('data-container').style.display = 'none';
-    document.getElementById('no-data-message').classList.remove('hidden');
-  } else {
-    showError('Failed to load records: ' + error.message);
+  try {
+    console.log(`Loading records for date: ${date}`);
+    
+    // We don't need to add a timestamp here anymore - fetchAPI in main.js handles it
+    const response = await fetchAPI(`hours/${date}`);
+    
+    // Show the data container and hide the no-data message
+    document.getElementById('data-container').style.display = 'block';
+    document.getElementById('no-data-message').classList.add('hidden');
+    
+    // Update the table with the records
+    updateRecordsTable(response.records);
+    
+    // Update the category list
+    updateCategoryList(response.records);
+  } catch (error) {
+    console.log(`Error loading data for ${date}:`, error.message);
+    
+    // More robust error detection
+    if (error.message.includes('404') || 
+        error.message.includes('No records') || 
+        error.message.includes('not found')) {
+      console.log('No data available, showing message');
+      // No records for this date - show the no-data message without an alert
+      document.getElementById('data-container').style.display = 'none';
+      document.getElementById('no-data-message').classList.remove('hidden');
+    } else {
+      // Only show error alert for unexpected errors, not for "no data" errors
+      showError('Failed to load records: ' + error.message);
+    }
   }
-}
 }
 
 // Update the records table

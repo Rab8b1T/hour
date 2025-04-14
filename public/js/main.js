@@ -103,25 +103,33 @@ function updateDateDisplay() {
   }
 }
 
-// Make API call with error handling and better debugging
+// Make API call with better error handling and fixed URL building
 async function fetchAPI(endpoint, options = {}) {
-  const fullUrl = `${API_BASE_URL}${endpoint}`;
-  console.log(`API request to: ${fullUrl}`, options);
+  // Remove any leading slash from endpoint to avoid double slashes
+  const cleanEndpoint = endpoint.startsWith('/') ? endpoint.substring(1) : endpoint;
   
-  try {
-    // Add cache-busting parameter to GET requests
-    const url = new URL(fullUrl, window.location.origin);
-    if (!options.method || options.method === 'GET') {
+  // Create URL object to properly handle parameters
+  const url = new URL(`${API_BASE_URL}/${cleanEndpoint}`, window.location.origin);
+  
+  // Add cache-busting parameter for GET requests
+  // But first check if there's already a _t parameter to avoid duplicates
+  if (!options.method || options.method === 'GET') {
+    if (!url.searchParams.has('_t')) {
       url.searchParams.append('_t', new Date().getTime());
     }
-    
+  }
+  
+  console.log(`API request to: ${url.toString()}`, options);
+  
+  try {
     const response = await fetch(url.toString(), options);
     
+    // Better error handling with status codes
     if (!response.ok) {
       let errorMsg;
       try {
         const errorData = await response.json();
-        errorMsg = errorData.msg || `API request failed with status ${response.status}`;
+        errorMsg = errorData.msg || errorData.message || `API request failed with status ${response.status}`;
       } catch (e) {
         errorMsg = `API request failed with status ${response.status}`;
       }
@@ -130,7 +138,11 @@ async function fetchAPI(endpoint, options = {}) {
     }
     
     const data = await response.json();
-    console.log('API Response:', data);
+    
+    // Log truncated response for large data
+    const stringData = JSON.stringify(data);
+    console.log(`API Response (${stringData.length} chars): ${stringData.substring(0, 200)}${stringData.length > 200 ? '...' : ''}`);
+    
     return data;
   } catch (error) {
     console.error('API Error:', error);
@@ -138,7 +150,30 @@ async function fetchAPI(endpoint, options = {}) {
   }
 }
 
+// Check API connectivity
+async function checkAPIConnectivity() {
+  try {
+    const result = await fetchAPI('test');
+    console.log('API connectivity test result:', result);
+    return true;
+  } catch (error) {
+    console.error('API connectivity test failed:', error);
+    return false;
+  }
+}
+
 // Initialize the application
 document.addEventListener('DOMContentLoaded', function() {
   updateDateDisplay();
+  
+  // Test API connectivity on page load
+  checkAPIConnectivity()
+    .then(isConnected => {
+      if (!isConnected) {
+        console.warn('API connectivity test failed. Some features may not work correctly.');
+      }
+    })
+    .catch(error => {
+      console.error('Error during API connectivity test:', error);
+    });
 });
