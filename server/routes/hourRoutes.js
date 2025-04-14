@@ -4,25 +4,28 @@ const Hour = require('../models/Hour');
 
 // Helper function to handle date ranges consistently
 function createDateRange(dateStr) {
-  // Parse date with timezone handling
-  const date = new Date(dateStr);
-  
-  // Create date range in UTC to ensure consistency across environments
-  const startDate = new Date(Date.UTC(
-    date.getFullYear(),
-    date.getMonth(),
-    date.getDate(),
-    0, 0, 0, 0
-  ));
-  
-  const endDate = new Date(Date.UTC(
-    date.getFullYear(),
-    date.getMonth(),
-    date.getDate(),
-    23, 59, 59, 999
-  ));
-  
-  return { startDate, endDate };
+  try {
+    // Parse date string to get year, month, day components
+    const [year, month, day] = dateStr.split('-').map(num => parseInt(num, 10));
+    
+    // Create start date (beginning of day in UTC)
+    const startDate = new Date(Date.UTC(year, month - 1, day, 0, 0, 0, 0));
+    
+    // Create end date (end of day in UTC)
+    const endDate = new Date(Date.UTC(year, month - 1, day, 23, 59, 59, 999));
+    
+    console.log(`Date range created: ${startDate.toISOString()} to ${endDate.toISOString()}`);
+    
+    return { startDate, endDate };
+  } catch (error) {
+    console.error(`Error parsing date: ${dateStr}`, error);
+    // Return default range if there's an error
+    const today = new Date();
+    return {
+      startDate: new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate(), 0, 0, 0, 0)),
+      endDate: new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate(), 23, 59, 59, 999))
+    };
+  }
 }
 
 // @route   GET /api/hours
@@ -47,17 +50,32 @@ router.get('/:date', async (req, res) => {
     const dateStr = req.params.date;
     console.log(`Looking for records on date: ${dateStr}`);
     
-    // Create a date range with consistent timezone handling
+    // Create a date range with improved timezone handling
     const { startDate, endDate } = createDateRange(dateStr);
     
     console.log(`Date range: ${startDate.toISOString()} to ${endDate.toISOString()}`);
     
-    // More detailed query to debug potential issues
+    // Use a more flexible query that looks at the day component
     const hourRecord = await Hour.findOne({
-      date: {
-        $gte: startDate,
-        $lte: endDate
-      }
+      $or: [
+        // Try exact match with date range
+        {
+          date: {
+            $gte: startDate,
+            $lte: endDate
+          }
+        },
+        // Try matching just the day, month, year components
+        {
+          $expr: {
+            $and: [
+              { $eq: [{ $year: "$date" }, startDate.getUTCFullYear()] },
+              { $eq: [{ $month: "$date" }, startDate.getUTCMonth() + 1] },
+              { $eq: [{ $dayOfMonth: "$date" }, startDate.getUTCDate()] }
+            ]
+          }
+        }
+      ]
     });
     
     // Try a broader search if no records found (for testing/debugging)

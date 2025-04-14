@@ -1,7 +1,19 @@
 // Common functionality shared across all pages
 
 // API base URL - dynamically determine based on environment
-const API_BASE_URL = window.location.origin + '/api';
+// API base URL - more robust implementation for all environments
+const API_BASE_URL = (() => {
+  // Check if we're in a production environment (like Vercel)
+  if (window.location.hostname !== 'localhost' && !window.location.hostname.includes('127.0.0.1')) {
+    return window.location.origin + '/api';
+  }
+  
+  // Fall back to localhost with default port for development
+  return 'http://localhost:5000/api';
+})();
+
+console.log('Using API base URL:', API_BASE_URL);
+
 
 // List of all available sections
 const ALL_SECTIONS = [
@@ -104,19 +116,21 @@ function updateDateDisplay() {
 }
 
 // Make API call with improved error handling and fixed URL building
+// Make API call with improved error handling and fixed URL building
 async function fetchAPI(endpoint, options = {}) {
   // Remove any leading slash from endpoint to avoid double slashes
   const cleanEndpoint = endpoint.startsWith('/') ? endpoint.substring(1) : endpoint;
   
-  // Create URL object to properly handle parameters
-  const url = new URL(`${API_BASE_URL}/${cleanEndpoint}`);
+  // Build the complete URL
+  let url = `${API_BASE_URL}/${cleanEndpoint}`;
   
   // Add cache-busting parameter for GET requests
   if (!options.method || options.method === 'GET') {
-    url.searchParams.append('_t', new Date().getTime());
+    const separator = url.includes('?') ? '&' : '?';
+    url = `${url}${separator}_t=${new Date().getTime()}`;
   }
   
-  console.log(`API request to: ${url.toString()}`, options);
+  console.log(`API request to: ${url}`, options);
   
   try {
     // Set default timeout
@@ -126,10 +140,15 @@ async function fetchAPI(endpoint, options = {}) {
     // Add abort controller to fetch options
     const fetchOptions = {
       ...options,
-      signal: controller.signal
+      signal: controller.signal,
+      // Add some headers that might help with CORS
+      headers: {
+        ...options.headers,
+        'Accept': 'application/json',
+      }
     };
     
-    const response = await fetch(url.toString(), fetchOptions);
+    const response = await fetch(url, fetchOptions);
     
     // Clear the timeout
     clearTimeout(timeoutId);
