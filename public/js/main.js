@@ -103,14 +103,19 @@ function updateDateDisplay() {
   }
 }
 
-// Make API call with error handling
-// Make API call with error handling
+// Make API call with error handling and better debugging
 async function fetchAPI(endpoint, options = {}) {
   const fullUrl = `${API_BASE_URL}${endpoint}`;
-  console.log(`API request to: ${fullUrl}`);
+  console.log(`API request to: ${fullUrl}`, options);
   
   try {
-    const response = await fetch(fullUrl, options);
+    // Add cache-busting parameter to GET requests
+    const url = new URL(fullUrl, window.location.origin);
+    if (!options.method || options.method === 'GET') {
+      url.searchParams.append('_t', new Date().getTime());
+    }
+    
+    const response = await fetch(url.toString(), options);
     
     if (!response.ok) {
       let errorMsg;
@@ -120,10 +125,13 @@ async function fetchAPI(endpoint, options = {}) {
       } catch (e) {
         errorMsg = `API request failed with status ${response.status}`;
       }
+      console.error('API Error Response:', response);
       throw new Error(errorMsg);
     }
     
-    return await response.json();
+    const data = await response.json();
+    console.log('API Response:', data);
+    return data;
   } catch (error) {
     console.error('API Error:', error);
     throw error;

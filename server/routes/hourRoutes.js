@@ -18,20 +18,17 @@ router.get('/', async (req, res) => {
 // @route   GET /api/hours/:date
 // @desc    Get hour record for specific date (YYYY-MM-DD)
 // @access  Public
-// @route   GET /api/hours/:date
-// @desc    Get hour record for specific date (YYYY-MM-DD)
-// @access  Public
 router.get('/:date', async (req, res) => {
   try {
     const dateStr = req.params.date;
     console.log(`Looking for records on date: ${dateStr}`);
     
-    // Create a date range that spans the entire day regardless of timezone
+    // Create a date range that spans the entire day in the local timezone
     const startDate = new Date(dateStr);
-    startDate.setUTCHours(0, 0, 0, 0);
+    startDate.setHours(0, 0, 0, 0);
     
     const endDate = new Date(dateStr);
-    endDate.setUTCHours(23, 59, 59, 999);
+    endDate.setHours(23, 59, 59, 999);
     
     console.log(`Date range: ${startDate.toISOString()} to ${endDate.toISOString()}`);
     
